@@ -1,6 +1,6 @@
 [submodule "panda"]
   path = panda
-  url = https://github.com/cbetlyon/panda/tree/df3d3a10b7277f486e752f8a065bf20eefd6e5b8
+  url = https://github.com/cbetlyon/panda.git
 [submodule "opendbc"]
   path = opendbc
   url = ../../commaai/opendbc.git
