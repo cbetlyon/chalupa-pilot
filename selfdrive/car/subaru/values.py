@@ -1,11 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, IntFlag
 from typing import Dict, List, Union
 
 from cereal import car
 from panda.python import uds
 from selfdrive.car import dbc_dict
-from selfdrive.car.docs_definitions import CarInfo, Harness
+from selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarInfo, CarParts, Column
 from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries, p16
 
 Ecu = car.CarParams.Ecu
@@ -34,6 +34,12 @@ class SubaruFlags(IntFlag):
   SEND_INFOTAINMENT = 1
 
 
+class CanBus:
+  main = 0
+  alt = 1
+  camera = 2
+
+
 class CAR:
   # Global platform
   ASCENT = "SUBARU ASCENT LIMITED 2019"
@@ -50,16 +56,23 @@ class CAR:
   OUTBACK_PREGLOBAL_2018 = "SUBARU OUTBACK 2018 - 2019"
 
 
+class Footnote(Enum):
+  GLOBAL = CarFootnote(
+    "In the non-US market, openpilot requires the car to come equipped with EyeSight with Lane Keep Assistance.",
+    Column.PACKAGE)
+
+
 @dataclass
 class SubaruCarInfo(CarInfo):
   package: str = "EyeSight Driver Assistance"
-  harness: Enum = Harness.subaru_a
+  car_parts: CarParts = field(default_factory=CarParts.common([CarHarness.subaru_a]))
+  footnotes: List[Enum] = field(default_factory=lambda: [Footnote.GLOBAL])
 
 
 CAR_INFO: Dict[str, Union[SubaruCarInfo, List[SubaruCarInfo]]] = {
   CAR.ASCENT: SubaruCarInfo("Subaru Ascent 2019-21", "All"),
-  CAR.OUTBACK: SubaruCarInfo("Subaru Outback 2020-22", "All", harness=Harness.subaru_b),
-  CAR.LEGACY: SubaruCarInfo("Subaru Legacy 2020-22", "All", harness=Harness.subaru_b),
+  CAR.OUTBACK: SubaruCarInfo("Subaru Outback 2020-22", "All", car_parts=CarParts.common([CarHarness.subaru_b])),
+  CAR.LEGACY: SubaruCarInfo("Subaru Legacy 2020-22", "All", car_parts=CarParts.common([CarHarness.subaru_b])),
   CAR.IMPREZA: [
     SubaruCarInfo("Subaru Impreza 2017-19"),
     SubaruCarInfo("Subaru Crosstrek 2018-19", video_link="https://youtu.be/Agww7oE1k-s?t=26"),
@@ -263,6 +276,7 @@ FW_VERSIONS = {
       b'\xf3"f@\x07',
       b'\xe6!fp\x07',
       b'\xf3"fp\x07',
+      b'\xe6"f0\x07',
     ],
     (Ecu.transmission, 0x7e1, None): [
       b'\xe6\xf5\004\000\000',
@@ -273,6 +287,7 @@ FW_VERSIONS = {
       b'\xe6\xf5D0\x00',
       b'\xe9\xf6F0\x00',
       b'\xe9\xf5B0\x00',
+      b'\xe9\xf6B0\x00',
     ],
   },
   CAR.FORESTER: {
@@ -510,6 +525,7 @@ FW_VERSIONS = {
       b'\xf1\x82\xe2,\xa0@\x07',
       b'\xbc"`q\x07',
       b'\xe3,\xa0@\x07',
+      b'\xbc,\xa0u\x07',
     ],
     (Ecu.transmission, 0x7e1, None): [
       b'\xa5\xfe\xf7@\x00',
@@ -519,6 +535,7 @@ FW_VERSIONS = {
       b'\xf1\x82\xa7\xf6D@\x00',
       b'\xa7\xf6D@\x00',
       b'\xa7\xfe\xf4@\x00',
+      b'\xa5\xfe\xf8@\x00',
     ],
   },
 }
